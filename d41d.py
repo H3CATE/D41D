@@ -1,18 +1,21 @@
 import time
-import argparse
 import requests
-from fpdf import FPDF
+import argparse
+import configparser
 from colorama import init, Fore, Style
 
 # Initialize colorama
 init(autoreset=True)
 
-# Replace these with your actual API keys
-TRIAGE_API_KEY = ""
-VIRUSTOTAL_API_KEY = ""
+#Initialize API_KEYS: 
 
+config = configparser.ConfigParser()
+config.read('api_keys.ini')
 
-
+# Fetch API Keys from file
+TRIAGE_API_KEY = config['API_KEYS']['TRIAGE_API_KEY']
+VIRUSTOTAL_API_KEY = config['API_KEYS']['VIRUSTOTAL_API_KEY']
+print(TRIAGE_API_KEY,VIRUSTOTAL_API_KEY)
 
 def fetch_detailed_report(task_url, headers, retries=5, delay=10):
     for _ in range(retries):
@@ -174,7 +177,7 @@ def print_triage_report(report):
                     print(f"{Fore.WHITE}    - {severity_color}{url}")
 
     print(f"{Fore.CYAN}\nTriage Report Link: {Fore.CYAN}https://tria.ge/{report['id']}")
-
+    
 def print_virustotal_report(report):
     results = report['data']['attributes']['results']
     score = sum(1 for result in results.values() if result['category'] == 'malicious')
@@ -195,7 +198,6 @@ def print_virustotal_report(report):
     for engine, result in results.items():
         if result['category'] == 'malicious':
             print(f"{Fore.WHITE}  - {severity_color}{engine}: {result['result']}")
-
 
 def main(file_path):
     print(f"{Fore.CYAN}Starting analysis with Triage and VirusTotal...")
